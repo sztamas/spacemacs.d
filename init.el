@@ -126,20 +126,13 @@ This function should only modify configuration layer settings."
      ;; Configuration: https://github.com/seagle0128/doom-modeline#customize
      (spacemacs-modeline :variables
                          doom-modeline-height 12
-                         doom-modeline-bar-width 1
+                         doom-modeline-major-mode-color-icon t
                          doom-modeline-buffer-file-name-style 'relative-to-project
                          doom-modeline-display-default-persp-name t
-                         doom-modeline-buffer-encoding nil
-                         doom-modeline-github t
-                         doom-modeline-gnus nil
-                         doom-modeline-irc nil
-                         doom-modeline-env-version t
+                         doom-modeline-minor-modes nil
                          doom-modeline-modal-icon nil)
 
-     ;; Customise the Spacemacs themes
-     ;; https://develop.spacemacs.org/layers/+themes/theming/README.html
-     ;; Code in dotspacemacs/user-init to reduce size of modeline
-     theming
+     ;; buffer-position word-count parrot selection-info
 
      ;; Spacemacs Org mode
      (org :variables
@@ -196,6 +189,18 @@ This function should only modify configuration layer settings."
                treemacs-indentation 1
                treemacs-use-filewatch-mode t
                treemacs-use-follow-mode t)
+
+     ;; Customise the Spacemacs themes
+     ;; https://develop.spacemacs.org/layers/+themes/theming/README.html
+     ;; Code in dotspacemacs/user-init to reduce size of modeline
+     ;; theming
+
+     ;; Support font ligatures (fancy symbols) in all modes
+     ;; 'prog-mode for only programming languages
+     ;; including text-mode may cause issues with org-mode and magit
+     (unicode-fonts :variables
+                    unicode-fonts-enable-ligatures t
+                    unicode-fonts-ligature-modes '(prog-mode))
 
      ;; Highlight changes in buffers
      ;; SPC g . transient state for navigating changes
@@ -323,7 +328,7 @@ It should only modify the values of Spacemacs settings."
    ;; directory. A string value must be a path to an image format supported
    ;; by your Emacs build.
    ;; If the value is nil then no banner is displayed. (default 'official)
-   dotspacemacs-startup-banner 'official
+   dotspacemacs-startup-banner "~/.spacemacs.d/banners/practicalli-logo.svg"
 
    ;; List of items to show in startup buffer or an association list of
    ;; the form `(list-type . list-size)`. If nil then it is disabled.
@@ -377,8 +382,8 @@ It should only modify the values of Spacemacs settings."
    dotspacemacs-colorize-cursor-according-to-state t
 
    ;; Default font or prioritized list of fonts.
-   dotspacemacs-default-font '("Ubuntu Mono"
-                               :size 24.0
+   dotspacemacs-default-font '("Fira Code"
+                               :size 16.0
                                :weight normal
                                :width normal)
 
@@ -680,8 +685,42 @@ Put your configuration code here, except for variables that should be set
 before packages are loaded."
 
 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Emacs text rendering optimizations
+  ;; https://200ok.ch/posts/2020-09-29_comprehensive_guide_on_handling_long_lines_in_emacs.html
+
+  ;; Only render text left to right
+  (setq-default bidi-paragraph-direction 'left-to-right)
+
+  ;; Disable Bidirectional Parentheses Algorithm
+  (if (version<= "27.1" emacs-version)
+      (setq bidi-inhibit-bpa t))
+
+  ;; Files with known long lines
+  ;; SPC f l to open files literally to disable most text processing
+
+  ;; So long mode when Emacs thinks a file would affect performance
+  (if (version<= "27.1" emacs-version)
+      (global-so-long-mode 1))
+
+  ;; End of: Emacs text rendering optimizations
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Doom theme settings
   (setq doom-gruvbox-light-variant "hard")
+  ;;
+  (defun practicalli/setup-custom-doom-modeline ()
+    (doom-modeline-set-modeline 'practicalli-modeline 'default))
+  ;;
+  (with-eval-after-load 'doom-modeline
+    (doom-modeline-def-modeline 'practicalli-modeline
+      '(workspace-name window-number modals persp-name buffer-info remote-host vcs)
+      '(repl debug lsp process matches checker buffer-position word-count parrot selection-info misc-info))
+    (practicalli/setup-custom-doom-modeline))
+  ;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
